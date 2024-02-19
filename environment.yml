@@ -1,0 +1,15 @@
+# Micromamba environment file
+# https://marketplace.visualstudio.com/items?itemName=corker.vscode-micromamba
+
+name: cs229
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python
+  - matplotlib
+  - numpy
+  - pip
+  - scipy
+  - pillow
