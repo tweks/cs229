@@ -27,12 +27,11 @@ def main(train_path, valid_path, save_path):
 
     # Use np.savetxt to save outputs from validation set to save_path
     pred_train = gda.predict(x_train)
-    loss_train = util.loss(pred_train, y_train)
-    print(f'Loss for {train_path}: {loss_train:.5f}')
+    util.print_stats(pred_train, y_train, train_path)
 
     pred_valid = gda.predict(x_valid)
-    loss = util.loss(pred_valid, y_valid)
-    print(f'Loss for {valid_path}: {loss:.5f}')
+    util.print_stats(pred_valid, y_valid, valid_path)
+
     np.savetxt(save_path, pred_valid)
     # *** END CODE HERE ***
 

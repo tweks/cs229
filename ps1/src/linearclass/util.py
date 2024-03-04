@@ -118,3 +118,14 @@ def loss(pred, y):
     pred_smoothed = pred - (pred == 1) * 1e-10
     loss = -1/n * (y @ np.log(pred_smoothed) + (1 - y) @ np.log(1 - pred_smoothed))
     return loss
+
+
+def accuracy(pred, y):
+    n, = y.shape
+    return np.sum(1 - np.logical_xor(pred > 0.5, y)) / n
+
+
+def print_stats(pred, y, name):
+    l = loss(pred, y)
+    acc = accuracy(pred, y)
+    print(f'{name}: accuracy: {acc:.5f} loss: {l:.5f}')

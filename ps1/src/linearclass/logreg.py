@@ -28,12 +28,10 @@ def main(train_path, valid_path, save_path):
     util.plot(x_valid, y_valid, lr.theta, f'logreg_{valid_path}.png', xlim, ylim)
 
     pred_train = lr.predict(x_train)
-    loss_train = util.loss(pred_train, y_train)
-    print(f'Loss for {train_path}: {loss_train:.5f}')
+    util.print_stats(pred_train, y_train, train_path)
 
     pred_valid = lr.predict(x_valid)
-    loss_valid = util.loss(pred_valid, y_valid)
-    print(f'Loss for {valid_path}: {loss_valid:.5f}')
+    util.print_stats(pred_valid, y_valid, valid_path)
 
     # Use np.savetxt to save predictions on eval set to save_path
     np.savetxt(save_path, lr.predict(x_valid))
@@ -89,7 +87,8 @@ class LogisticRegression:
             norm = np.linalg.norm(delta, 1)
             if self.verbose:
                 loss = util.loss(pred, y)
-                print(f'epoch {i}: loss {loss:.5f} delta {norm:.5f}')
+                acc = util.accuracy(pred, y)
+                print(f'epoch {i}: accuracy {acc:.5f} loss {loss:.5f} delta {norm:.5f}')
             self.theta = self.theta - delta
             if norm < self.eps:
                 return
