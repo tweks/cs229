@@ -15,16 +15,25 @@ def main(train_path, valid_path, save_path):
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=False)
     x_valid_int, _ = util.load_dataset(valid_path, add_intercept=True)
 
+    xlim, ylim = util.get_lim(x_train, x_valid)
+
     # *** START CODE HERE ***
     # Train a GDA classifier
     gda = GDA()
     gda.fit(x_train, y_train)
 
     # Plot decision boundary on validation set
-    util.plot(x_valid_int, y_valid, gda.theta, f'gda_{valid_path}.png')
+    util.plot(x_valid_int, y_valid, gda.theta, f'gda_{valid_path}.png', xlim, ylim)
 
     # Use np.savetxt to save outputs from validation set to save_path
-    np.savetxt(save_path, gda.predict(x_valid))
+    pred_train = gda.predict(x_train)
+    loss_train = util.loss(pred_train, y_train)
+    print(f'Loss for {train_path}: {loss_train:.5f}')
+
+    pred_valid = gda.predict(x_valid)
+    loss = util.loss(pred_valid, y_valid)
+    print(f'Loss for {valid_path}: {loss:.5f}')
+    np.savetxt(save_path, pred_valid)
     # *** END CODE HERE ***
 
 

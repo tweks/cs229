@@ -63,7 +63,7 @@ def load_dataset(csv_path, label_col='y', add_intercept=False):
     return inputs, labels
 
 
-def plot(x, y, theta, save_path, correction=1.0):
+def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0):
     """Plot dataset and fitted logistic regression parameters.
 
     Args:
@@ -73,7 +73,6 @@ def plot(x, y, theta, save_path, correction=1.0):
         save_path: Path to save the plot.
         correction: Correction factor to apply, if any.
     """
-    print(f'Plotting {save_path}')
     # Plot dataset
     plt.figure()
     plt.plot(x[y == 1, -2], x[y == 1, -1], 'bx', linewidth=2)
@@ -85,13 +84,24 @@ def plot(x, y, theta, save_path, correction=1.0):
         x2 = -(theta[0] / theta[2] + theta[1] / theta[2] * x1
             + np.log((2 - correction) / correction) / theta[2])
         plt.plot(x1, x2, c='red', linewidth=2)
-    plt.xlim(x[:, -2].min()-.1, x[:, -2].max()+.1)
-    plt.ylim(x[:, -1].min()-.1, x[:, -1].max()+.1)
+    if xlim is None:
+        xlim = (x[:, -2].min()-.1, x[:, -2].max()+.1)
+    if ylim is None:
+        ylim = (x[:, -1].min()-.1, x[:, -1].max()+.1)
+    plt.xlim(xlim)
+    plt.ylim(ylim)
 
     # Add labels and save to disk
     plt.xlabel('x1')
     plt.ylabel('x2')
     plt.savefig(save_path)
+
+
+def get_lim(*args):
+    x = np.concatenate(args)
+    xlim = (x[:, -2].min()-.1, x[:, -2].max()+.1)
+    ylim = (x[:, -1].min()-.1, x[:, -1].max()+.1)
+    return xlim, ylim
 
 
 def print_matrix(m, name):
@@ -101,3 +111,10 @@ def print_matrix(m, name):
 
 def sigmoid(x):
     return 1. / (1. + np.exp(-x))
+
+
+def loss(pred, y):
+    n, = y.shape
+    pred_smoothed = pred - (pred == 1) * 1e-10
+    loss = -1/n * (y @ np.log(pred_smoothed) + (1 - y) @ np.log(1 - pred_smoothed))
+    return loss

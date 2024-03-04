@@ -9,18 +9,31 @@ def main(train_path, valid_path, save_path):
         valid_path: Path to CSV file containing dataset for validation.
         save_path: Path to save predicted probabilities using np.savetxt().
     """
-    print(f'******* {train_path}')
     x_train, y_train = util.load_dataset(train_path, add_intercept=True)
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=True)
 
-    util.plot(x_train, y_train, None, f'{train_path}.png')
+    xlim, ylim = util.get_lim(x_train, x_valid)
+
+    util.plot(x_train, y_train, None, f'{train_path}.png', xlim, ylim)
+    util.plot(x_train[y_train == 0], y_train[y_train == 0], None, f'{train_path}_0.png', xlim, ylim)
+    util.plot(x_train[y_train == 1], y_train[y_train == 1], None, f'{train_path}_1.png', xlim, ylim)
+    util.plot(x_valid[y_valid == 0], y_valid[y_valid == 0], None, f'{valid_path}_0.png', xlim, ylim)
+    util.plot(x_valid[y_valid == 1], y_valid[y_valid == 1], None, f'{valid_path}_1.png', xlim, ylim)
 
     # Train a logistic regression classifier
-    lr = LogisticRegression()
+    lr = LogisticRegression(verbose=False)
     lr.fit(x_train, y_train)
 
     # Plot decision boundary on top of validation set set
-    util.plot(x_valid, y_valid, lr.theta, f'logreg_{valid_path}.png')
+    util.plot(x_valid, y_valid, lr.theta, f'logreg_{valid_path}.png', xlim, ylim)
+
+    pred_train = lr.predict(x_train)
+    loss_train = util.loss(pred_train, y_train)
+    print(f'Loss for {train_path}: {loss_train:.5f}')
+
+    pred_valid = lr.predict(x_valid)
+    loss_valid = util.loss(pred_valid, y_valid)
+    print(f'Loss for {valid_path}: {loss_valid:.5f}')
 
     # Use np.savetxt to save predictions on eval set to save_path
     np.savetxt(save_path, lr.predict(x_valid))
@@ -75,12 +88,12 @@ class LogisticRegression:
             util.print_matrix(delta, 'delta')
             norm = np.linalg.norm(delta, 1)
             if self.verbose:
-                pred_smoothed = pred - (pred == 1) * 1e-10
-                loss = -1/n * (y @ np.log(pred_smoothed) + (1 - y) @ np.log(1 - pred_smoothed))
+                loss = util.loss(pred, y)
                 print(f'epoch {i}: loss {loss:.5f} delta {norm:.5f}')
             self.theta = self.theta - delta
             if norm < self.eps:
                 return
+
 
     def predict(self, x):
         """Return predicted probabilities given new inputs x.
