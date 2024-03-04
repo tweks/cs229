@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+DEBUG_LEVEL = 0
+
+
 def add_intercept(x):
     """Add intercept to matrix x.
 
@@ -88,3 +91,12 @@ def plot(x, y, theta, save_path, correction=1.0):
     plt.xlabel('x1')
     plt.ylabel('x2')
     plt.savefig(save_path)
+
+
+def print_matrix(m, name):
+    if DEBUG_LEVEL >= 1: print(f'{name}: {m.shape} {m.dtype}')
+    if DEBUG_LEVEL >= 2: print(m)
+
+
+def sigmoid(x):
+    return 1. / (1. + np.exp(-x))

@@ -1,8 +1,6 @@
 import numpy as np
 import util
 
-DEBUG = False
-
 def main(train_path, valid_path, save_path):
     """Problem: Logistic regression with Newton's Method.
 
@@ -15,14 +13,14 @@ def main(train_path, valid_path, save_path):
     x_train, y_train = util.load_dataset(train_path, add_intercept=True)
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=True)
 
-    util.plot(x_train, y_train, None, f'{train_path}.png')
+    util.plot(x_train, y_train, None, f'logreg_{train_path}.png')
 
     # Train a logistic regression classifier
     lr = LogisticRegression()
     lr.fit(x_train, y_train)
 
     # Plot decision boundary on top of validation set set
-    util.plot(x_valid, y_valid, lr.theta, f'{valid_path}.png')
+    util.plot(x_valid, y_valid, lr.theta, f'logreg_{valid_path}.png')
 
     # Use np.savetxt to save predictions on eval set to save_path
     np.savetxt(save_path, lr.predict(x_valid))
@@ -63,18 +61,18 @@ class LogisticRegression:
         if self.theta is None:
             self.theta = np.zeros(dim)
         
-        print_matrix(x, 'x')
-        print_matrix(y, 'y')
+        util.print_matrix(x, 'x')
+        util.print_matrix(y, 'y')
         
         for i in range(self.max_iter):
             pred = self.predict(x)
-            print_matrix(pred, 'pred')
+            util.print_matrix(pred, 'pred')
             gradient = -1/n * x.T @ (y - pred)
-            print_matrix(gradient, 'gradient')
+            util.print_matrix(gradient, 'gradient')
             hessian = 1/n * x.T @ np.diag(pred * (1 - pred)) @ x
-            print_matrix(hessian, 'hessian')
+            util.print_matrix(hessian, 'hessian')
             delta = np.linalg.inv(hessian) @ gradient
-            print_matrix(delta, 'delta')
+            util.print_matrix(delta, 'delta')
             norm = np.linalg.norm(delta, 1)
             if self.verbose:
                 pred_smoothed = pred - (pred == 1) * 1e-10
@@ -93,20 +91,12 @@ class LogisticRegression:
         Returns:
             Outputs of shape (n_examples,).
         """
-        def sigmoid(x):
-            return 1. / (1. + np.exp(-x))
 
-        print_matrix(self.theta, 'theta')
-        print_matrix(x, 'x')
-        preds = sigmoid(x @ self.theta)
-        print_matrix(preds, 'preds')
+        util.print_matrix(self.theta, 'theta')
+        util.print_matrix(x, 'x')
+        preds = util.sigmoid(x @ self.theta)
+        util.print_matrix(preds, 'preds')
         return preds
-
-
-def print_matrix(m, name):
-    if DEBUG:
-        print(f'{name}: {m.shape}')
-        print(m)
 
 
 if __name__ == '__main__':
