@@ -13,7 +13,7 @@ def main(train_path, valid_path, save_path):
     x_train, y_train = util.load_dataset(train_path, add_intercept=True)
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=True)
 
-    util.plot(x_train, y_train, None, f'logreg_{train_path}.png')
+    util.plot(x_train, y_train, None, f'{train_path}.png')
 
     # Train a logistic regression classifier
     lr = LogisticRegression()

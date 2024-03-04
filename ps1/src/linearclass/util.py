@@ -73,6 +73,7 @@ def plot(x, y, theta, save_path, correction=1.0):
         save_path: Path to save the plot.
         correction: Correction factor to apply, if any.
     """
+    print(f'Plotting {save_path}')
     # Plot dataset
     plt.figure()
     plt.plot(x[y == 1, -2], x[y == 1, -1], 'bx', linewidth=2)
