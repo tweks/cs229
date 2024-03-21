@@ -63,7 +63,7 @@ def load_dataset(csv_path, label_col='y', add_intercept=False):
     return inputs, labels
 
 
-def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0):
+def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0, alpha=1.0):
     """Plot dataset and fitted logistic regression parameters.
 
     Args:
@@ -75,8 +75,8 @@ def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0):
     """
     # Plot dataset
     plt.figure()
-    plt.plot(x[y == 1, -2], x[y == 1, -1], 'bx', linewidth=2)
-    plt.plot(x[y == 0, -2], x[y == 0, -1], 'go', linewidth=2)
+    plt.plot(x[y == 1, -2], x[y == 1, -1], 'bx', linewidth=2, alpha=alpha)
+    plt.plot(x[y == 0, -2], x[y == 0, -1], 'go', linewidth=2, alpha=alpha)
 
     if theta is not None:
         # Plot decision boundary (found by solving for theta^T x = 0)

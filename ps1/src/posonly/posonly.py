@@ -32,7 +32,8 @@ def main(train_path, valid_path, test_path, save_path):
 
     xlim, ylim = util.get_lim([x_train, x_test], 4)
 
-    util.plot(x_train, t_train, None, f'{train_path}.png', xlim, ylim)
+    util.plot(x_train, t_train, None, f'{train_path}_true.png', xlim, ylim, alpha=0.5)
+    util.plot(x_train, y_train, None, f'{train_path}_observed.png', xlim, ylim, alpha=0.5)
 
     # *** START CODE HERE ***
     # Part (a): Train and test on true labels
