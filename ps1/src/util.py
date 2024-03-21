@@ -80,7 +80,10 @@ def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0):
 
     if theta is not None:
         # Plot decision boundary (found by solving for theta^T x = 0)
-        x1 = np.arange(min(x[:, -2]), max(x[:, -2]), 0.01)
+        if xlim is None:
+            x1 = np.arange(min(x[:, -2]), max(x[:, -2]), 0.01)
+        else:
+            x1 = np.arange(*xlim, 0.01)
         x2 = -(theta[0] / theta[2] + theta[1] / theta[2] * x1
             + np.log((2 - correction) / correction) / theta[2])
         plt.plot(x1, x2, c='red', linewidth=2)
