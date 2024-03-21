@@ -38,7 +38,7 @@ def main(train_path, valid_path, test_path, save_path):
     util.print_matrix(x_train, 'x_train')
     lr = LogisticRegression(verbose=False)
     lr.fit(x_train, t_train)
-    util.plot(x_test, t_test, lr.theta, f'logreg_{test_path}.png', xlim, ylim)
+    util.plot(x_test, t_test, lr.theta, f'{output_path_true}.png', xlim, ylim)
     np.savetxt(output_path_true, lr.predict(x_test))
 
     # Make sure to save predicted probabilities to output_path_true using np.savetxt()
