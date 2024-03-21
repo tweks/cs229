@@ -39,7 +39,7 @@ def main(train_path, valid_path, test_path, save_path):
     lr = LogisticRegression(verbose=False)
     lr.fit(x_train, t_train)
     util.plot(x_test, t_test, lr.theta, f'logreg_{test_path}.png', xlim, ylim)
-    np.savetxt(save_path, lr.predict(x_test))
+    np.savetxt(output_path_true, lr.predict(x_test))
 
     # Make sure to save predicted probabilities to output_path_true using np.savetxt()
     # Part (b): Train on y-labels and test on true labels
