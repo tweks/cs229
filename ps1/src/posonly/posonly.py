@@ -2,8 +2,6 @@ import numpy as np
 import util
 import sys
 
-### NOTE : You need to complete logreg implementation first!
-
 from linearclass.logreg import LogisticRegression
 
 # Character to replace with sub-problem letter in plot_path/save_path
@@ -28,8 +26,21 @@ def main(train_path, valid_path, test_path, save_path):
     output_path_naive = save_path.replace(WILDCARD, 'naive')
     output_path_adjusted = save_path.replace(WILDCARD, 'adjusted')
 
+    x_train, t_train = util.load_dataset(train_path, label_col='t', add_intercept=True)
+    x_test, t_test = util.load_dataset(test_path, label_col='t', add_intercept=True)
+
+    xlim, ylim = util.get_lim(x_train, x_test)
+
+    util.plot(x_train, t_train, None, f'{train_path}.png', xlim, ylim)
+
     # *** START CODE HERE ***
     # Part (a): Train and test on true labels
+    util.print_matrix(x_train, 'x_train')
+    lr = LogisticRegression(verbose=False)
+    lr.fit(x_train, t_train)
+    util.plot(x_test, t_test, lr.theta, f'logreg_{test_path}.png', xlim, ylim)
+    np.savetxt(save_path, lr.predict(x_test))
+
     # Make sure to save predicted probabilities to output_path_true using np.savetxt()
     # Part (b): Train on y-labels and test on true labels
     # Make sure to save predicted probabilities to output_path_naive using np.savetxt()
