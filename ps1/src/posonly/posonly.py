@@ -2,11 +2,9 @@ import numpy as np
 import util
 import sys
 
-sys.path.append('../linearclass')
-
 ### NOTE : You need to complete logreg implementation first!
 
-from logreg import LogisticRegression
+from linearclass.logreg import LogisticRegression
 
 # Character to replace with sub-problem letter in plot_path/save_path
 WILDCARD = 'X'
