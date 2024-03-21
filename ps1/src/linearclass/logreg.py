@@ -12,7 +12,7 @@ def main(train_path, valid_path, save_path):
     x_train, y_train = util.load_dataset(train_path, add_intercept=True)
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=True)
 
-    xlim, ylim = util.get_lim(x_train, x_valid)
+    xlim, ylim = util.get_lim((x_train, x_valid))
 
     util.plot(x_train, y_train, None, f'{train_path}.png', xlim, ylim)
     util.plot(x_train[y_train == 0], y_train[y_train == 0], None, f'{train_path}_0.png', xlim, ylim)

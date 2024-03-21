@@ -15,7 +15,7 @@ def main(train_path, valid_path, save_path):
     x_valid, y_valid = util.load_dataset(valid_path, add_intercept=False)
     x_valid_int, _ = util.load_dataset(valid_path, add_intercept=True)
 
-    xlim, ylim = util.get_lim(x_train, x_valid)
+    xlim, ylim = util.get_lim((x_train, x_valid))
 
     # *** START CODE HERE ***
     # Train a GDA classifier

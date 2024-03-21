@@ -100,10 +100,10 @@ def plot(x, y, theta, save_path, xlim=None, ylim=None, correction=1.0):
     plt.savefig(save_path)
 
 
-def get_lim(*args):
-    x = np.concatenate(args)
-    xlim = (x[:, -2].min()-.1, x[:, -2].max()+.1)
-    ylim = (x[:, -1].min()-.1, x[:, -1].max()+.1)
+def get_lim(arrays, expand_by=.1):
+    x = np.concatenate(arrays)
+    xlim = (x[:, -2].min() - expand_by, x[:, -2].max() + expand_by)
+    ylim = (x[:, -1].min() - expand_by, x[:, -1].max() + expand_by)
     return xlim, ylim
 
 
