@@ -29,11 +29,13 @@ def main(train_path, valid_path, test_path, save_path):
     x_train, t_train = util.load_dataset(train_path, label_col='t', add_intercept=True)
     _, y_train = util.load_dataset(train_path, label_col='y', add_intercept=True)
     x_test, t_test = util.load_dataset(test_path, label_col='t', add_intercept=True)
+    x_valid, y_valid = util.load_dataset(valid_path, label_col='y', add_intercept=True)
 
-    xlim, ylim = util.get_lim([x_train, x_test], 4)
+    xlim, ylim = util.get_lim([x_train, x_test, x_valid], 4)
 
     util.plot(x_train, t_train, None, f'{train_path}_true.png', xlim, ylim, alpha=0.5)
     util.plot(x_train, y_train, None, f'{train_path}_observed.png', xlim, ylim, alpha=0.5)
+    util.plot(x_valid, y_valid, None, f'{valid_path}_observed.png', xlim, ylim, alpha=0.5)
 
     # *** START CODE HERE ***
     # Part (a): Train and test on true labels
@@ -46,10 +48,19 @@ def main(train_path, valid_path, test_path, save_path):
     lr = LogisticRegression(verbose=False)
     lr.fit(x_train, y_train)
     util.plot(x_test, t_test, lr.theta, f'{output_path_naive}.png', xlim, ylim)
+    x_valid, y_valid = util.load_dataset(valid_path, label_col='y', add_intercept=True)
     np.savetxt(output_path_naive, lr.predict(x_test))
 
     # Part (f): Apply correction factor using validation set and test on true labels
+    x_pos_valid = x_valid[y_valid == 1]
+    util.print_matrix(x_pos_valid, 'x_pos_valid')
+    util.print_matrix(x_pos_valid, 'x_pos_valid')
+    alpha = np.average(lr.predict(x_pos_valid))
+    preds_adjusted = lr.predict(x_test) / alpha
+
     # Plot and use np.savetxt to save outputs to output_path_adjusted
+    util.plot(x_test, t_test, lr.theta, f'{output_path_adjusted}.png', xlim, ylim, correction=alpha)
+    np.savetxt(output_path_adjusted, preds_adjusted)
     # *** END CODER HERE
 
 if __name__ == '__main__':

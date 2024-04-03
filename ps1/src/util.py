@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-DEBUG_LEVEL = 0
+DEBUG_LEVEL = 1
 
 
 def add_intercept(x):
