@@ -1,6 +1,5 @@
 import numpy as np
 import util
-import sys
 
 from linearclass.logreg import LogisticRegression
 
@@ -62,6 +61,7 @@ def main(train_path, valid_path, test_path, save_path):
     util.plot(x_test, t_test, lr.theta, f'{output_path_adjusted}.png', xlim, ylim, correction=alpha)
     np.savetxt(output_path_adjusted, preds_adjusted)
     # *** END CODER HERE
+
 
 if __name__ == '__main__':
     main(train_path='train.csv',
