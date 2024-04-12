@@ -2,6 +2,18 @@ import numpy as np
 import util
 import matplotlib.pyplot as plt
 
+
+def plot(true_val, pred_val, save_path):
+    plt.figure()
+    plt.plot(true_val, pred_val, 'bo')
+    plt.xlabel('true values')
+    plt.ylabel('predicted values')
+    lim = np.concatenate((true_val, pred_val)).max() + .1
+    plt.xlim(0, lim)
+    plt.ylim(0, lim)
+    plt.savefig(save_path)
+
+
 def main(lr, train_path, eval_path, save_path):
     """Problem: Poisson regression with gradient ascent.
 
@@ -13,10 +25,17 @@ def main(lr, train_path, eval_path, save_path):
     """
     # Load training set
     x_train, y_train = util.load_dataset(train_path, add_intercept=True)
+    _, num_features = x_train.shape
 
     # *** START CODE HERE ***
     # Fit a Poisson Regression model
+    clf = PoissonRegression(step_size=lr, theta_0=np.random.rand(num_features))
+    clf.fit(x_train, y_train)
     # Run on the validation set, and use np.savetxt to save outputs to save_path
+    x_valid, y_valid = util.load_dataset(eval_path, add_intercept=True)
+    h_valid = clf.predict(x_valid)
+    np.savetxt(save_path, h_valid)
+    plot(y_valid, h_valid, f'{save_path}.png')
     # *** END CODE HERE ***
 
 
@@ -53,6 +72,16 @@ class PoissonRegression:
             y: Training example labels. Shape (n_examples,).
         """
         # *** START CODE HERE ***
+        for num_iter in range(self.max_iter):
+            h = self.predict(x)
+            grad = (y - h) @ x
+            if self.verbose:
+                loss = np.linalg.norm(y - h)
+                print(f'Epoch {num_iter}: loss {loss:.5f}')
+            new_theta = self.theta + self.step_size * grad
+            if np.linalg.norm(new_theta - self.theta) < self.eps:
+                return
+            self.theta = new_theta
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -65,6 +94,7 @@ class PoissonRegression:
             Floating-point prediction for each input, shape (n_examples,).
         """
         # *** START CODE HERE ***
+        return np.exp(x @ self.theta)
         # *** END CODE HERE ***
 
 if __name__ == '__main__':
