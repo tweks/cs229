@@ -40,8 +40,8 @@ class LinearModel(object):
         """
         # *** START CODE HERE ***
         num_examples, _ = X.shape
-        x = X[:, 1:]
-        fmap = np.zeros(num_examples, k+1)
+        x = X[:, 1]
+        fmap = np.zeros((num_examples, k+1))
         for i in range(0, k+1):
             fmap[:, i] = x ** i
         return fmap
@@ -58,7 +58,7 @@ class LinearModel(object):
         # *** START CODE HERE ***
         fmap = self.create_poly(k, X)
         x = X[:, 1:]
-        return numpy.concatenate(fmap, np.sin(x))
+        return np.concatenate((fmap, np.sin(x)), axis=1)
         # *** END CODE HERE ***
 
     def predict(self, X):
@@ -89,9 +89,9 @@ def run_exp(train_path, sine=False, ks=[1, 2, 3, 5, 10, 20], filename='plot.png'
         Our objective is to train models and perform predictions on plot_x data
         '''
         # *** START CODE HERE ***
-        theta_size = k + 1 + (1 if sine else 0)
-        model = LinearModel(np.zeros(theta_size))
-        train_x_mapped = model.create_sin(k, train_x) if sine else model.create_poly(k, X)
+        # theta_size = k + 1 + (1 if sine else 0)
+        model = LinearModel()
+        train_x_mapped = model.create_sin(k, train_x) if sine else model.create_poly(k, train_x)
         model.fit(train_x_mapped, train_y)
         plot_x_mapped = model.create_sin(k, plot_x) if sine else model.create_poly(k, plot_x)
         plot_y = model.predict(plot_x_mapped)
@@ -113,6 +113,9 @@ def main(train_path, small_path, eval_path):
     '''
     # *** START CODE HERE ***
     run_exp(train_path, sine=False, ks=[3], filename='plot_deg3.png')
+    run_exp(train_path, sine=False, ks=[3, 5, 10, 20], filename='plot_poly.png')
+    run_exp(train_path, sine=True, ks=[0, 1, 2, 3, 5, 10, 20], filename='plot_sin.png')
+    run_exp(small_path, sine=False, ks=[1, 2, 5, 10, 20], filename='plot_small.png')
     # *** END CODE HERE ***
 
 if __name__ == '__main__':
