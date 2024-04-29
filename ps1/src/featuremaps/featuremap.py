@@ -26,6 +26,7 @@ class LinearModel(object):
             y: Training example labels. Shape (n_examples,).
         """
         # *** START CODE HERE ***
+        self.theta = np.linalg.solve(X.T @ X, X.T @ y)
         # *** END CODE HERE ***
 
     def create_poly(self, k, X):
@@ -38,6 +39,12 @@ class LinearModel(object):
             X: Training example inputs. Shape (n_examples, 2).
         """
         # *** START CODE HERE ***
+        num_examples, _ = X.shape
+        x = X[:, 1:]
+        fmap = np.zeros(num_examples, k+1)
+        for i in range(0, k+1):
+            fmap[:, i] = x ** i
+        return fmap
         # *** END CODE HERE ***
 
     def create_sin(self, k, X):
@@ -49,6 +56,9 @@ class LinearModel(object):
             X: Training example inputs. Shape (n_examples, 2).
         """
         # *** START CODE HERE ***
+        fmap = self.create_poly(k, X)
+        x = X[:, 1:]
+        return numpy.concatenate(fmap, np.sin(x))
         # *** END CODE HERE ***
 
     def predict(self, X):
@@ -63,6 +73,7 @@ class LinearModel(object):
             Outputs of shape (n_examples,).
         """
         # *** START CODE HERE ***
+        return X @ self.theta
         # *** END CODE HERE ***
 
 
@@ -78,6 +89,12 @@ def run_exp(train_path, sine=False, ks=[1, 2, 3, 5, 10, 20], filename='plot.png'
         Our objective is to train models and perform predictions on plot_x data
         '''
         # *** START CODE HERE ***
+        theta_size = k + 1 + (1 if sine else 0)
+        model = LinearModel(np.zeros(theta_size))
+        train_x_mapped = model.create_sin(k, train_x) if sine else model.create_poly(k, X)
+        model.fit(train_x_mapped, train_y)
+        plot_x_mapped = model.create_sin(k, plot_x) if sine else model.create_poly(k, plot_x)
+        plot_y = model.predict(plot_x_mapped)
         # *** END CODE HERE ***
         '''
         Here plot_y are the predictions of the linear model on the plot_x data
@@ -92,9 +109,10 @@ def run_exp(train_path, sine=False, ks=[1, 2, 3, 5, 10, 20], filename='plot.png'
 
 def main(train_path, small_path, eval_path):
     '''
-    Run all expetriments
+    Run all experiments
     '''
     # *** START CODE HERE ***
+    run_exp(train_path, sine=False, ks=[3], filename='plot_deg3.png')
     # *** END CODE HERE ***
 
 if __name__ == '__main__':
