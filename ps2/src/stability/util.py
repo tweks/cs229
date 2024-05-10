@@ -111,13 +111,18 @@ def plot_contour(predict_fn):
 
     plt.contourf(x, y, z, levels=[-float('inf'), 0, float('inf')], colors=['orange', 'cyan'])
 
-def plot_points(x, y):
+def plot_points(ax, x, y):
     """Plot some points where x are the coordinates and y is the label"""
     x_one = x[y == 0, :]
     x_two = x[y == 1, :]
 
-    plt.scatter(x_one[:,0], x_one[:,1], marker='x', color='red')
-    plt.scatter(x_two[:,0], x_two[:,1], marker='o', color='blue')
+    ax.scatter(x_one[:,0], x_one[:,1], marker='x', color='red')
+    ax.scatter(x_two[:,0], x_two[:,1], marker='o', color='blue')
+
+def plot_boundary(ax, x, theta, colour):
+    x1 = np.arange(min(x[:, -2]), max(x[:, -2]), 0.01)
+    x2 = -(theta[0] / theta[2] + theta[1] / theta[2] * x1)
+    ax.plot(x1, x2, c=colour, linewidth=2)
 
 def write_json(filename, value):
     """Write the provided value as JSON to the given filename"""
