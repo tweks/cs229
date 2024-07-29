@@ -1,9 +1,9 @@
-import collections
-
 import numpy as np
 
 import util
 import svm
+
+from collections import Counter, defaultdict
 
 
 def get_words(message):
@@ -21,6 +21,7 @@ def get_words(message):
     """
 
     # *** START CODE HERE ***
+    return [w.lower() for w in message.split(' ')]
     # *** END CODE HERE ***
 
 
@@ -41,6 +42,10 @@ def create_dictionary(messages):
     """
 
     # *** START CODE HERE ***
+    msg_words = [set(get_words(msg)) for msg in messages]
+    words_freq = Counter([w for words in msg_words for w in words])
+    dict_words = [w for w in set(words_freq) if words_freq[w] >= 5]
+    return dict([(w, i) for i, w in enumerate(sorted(dict_words))])
     # *** END CODE HERE ***
 
 
@@ -65,6 +70,13 @@ def transform_text(messages, word_dictionary):
         j-th vocabulary word in the i-th message.
     """
     # *** START CODE HERE ***
+    msg_arrays = []
+    for msg in messages:
+        msg_vec = np.zeros(len(word_dictionary))
+        for word in [w for w in get_words(msg) if w in word_dictionary]:
+            msg_vec[word_dictionary[word]] += 1
+        msg_arrays.append(msg_vec)
+    return np.stack(msg_arrays)
     # *** END CODE HERE ***
 
 
@@ -85,6 +97,13 @@ def fit_naive_bayes_model(matrix, labels):
     """
 
     # *** START CODE HERE ***
+    phi_y = labels.sum() / labels.size
+    _, num_classes = matrix.shape
+    matrix_pos = matrix[labels == 1, :]
+    phi_pos = (matrix_pos.sum(axis=0) + 1) / (matrix_pos.sum() + num_classes)
+    matrix_neg = matrix[labels == 0, :]
+    phi_neg = (matrix_neg.sum(axis=0) + 1) / (matrix_neg.sum() + num_classes)
+    return (phi_y, phi_pos, phi_neg)
     # *** END CODE HERE ***
 
 
@@ -101,6 +120,11 @@ def predict_from_naive_bayes_model(model, matrix):
     Returns: A numpy array containg the predictions from the model
     """
     # *** START CODE HERE ***
+    phi_y, phi_pos, phi_neg = model
+    log_prob_pos = np.log(phi_y) + matrix @ np.log(phi_pos)
+    log_prob_neg = np.log(1 - phi_y) + matrix @ np.log(phi_neg)
+    probs = np.exp(log_prob_pos - (log_prob_pos + np.log(1 + np.exp(log_prob_neg - log_prob_pos))))
+    return np.round(probs)
     # *** END CODE HERE ***
 
 
@@ -117,6 +141,10 @@ def get_top_five_naive_bayes_words(model, dictionary):
     Returns: A list of the top five most indicative words in sorted order with the most indicative first
     """
     # *** START CODE HERE ***
+    _, phi_pos, phi_neg = model
+    words = np.array(list(dictionary))
+    spam_ind = np.log(phi_pos) - np.log(phi_neg)
+    return words[(-spam_ind).argsort()[:5]].tolist()
     # *** END CODE HERE ***
 
 
@@ -137,6 +165,11 @@ def compute_best_svm_radius(train_matrix, train_labels, val_matrix, val_labels, 
         The best radius which maximizes SVM accuracy.
     """
     # *** START CODE HERE ***
+    accuracies = []
+    for radius in radius_to_consider:
+        preds = svm.train_and_predict_svm(train_matrix, train_labels, val_matrix, radius)
+        accuracies.append(np.mean(preds == val_labels))
+    return radius_to_consider[np.argmax(accuracies)]
     # *** END CODE HERE ***
 
 
