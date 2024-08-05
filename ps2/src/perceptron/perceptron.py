@@ -6,6 +6,13 @@ import numpy as np
 import util
 
 
+class State():
+    def __init__(self):
+        self.X = np.array([])
+        self.Y = np.array([])
+        self.beta = np.array([])
+
+
 def initial_state():
     """Return the initial state for the perceptron.
 
@@ -16,6 +23,7 @@ def initial_state():
     """
 
     # *** START CODE HERE ***
+    return State()
     # *** END CODE HERE ***
 
 
@@ -33,6 +41,8 @@ def predict(state, kernel, x_i):
         Returns the prediction (i.e 0 or 1)
     """
     # *** START CODE HERE ***
+    K = np.array([kernel(x, x_i) for x in state.X])
+    return sign(np.dot(state.beta, K))
     # *** END CODE HERE ***
 
 
@@ -47,6 +57,17 @@ def update_state(state, kernel, learning_rate, x_i, y_i):
         y_i: A 0 or 1 indicating the label for a single instance
     """
     # *** START CODE HERE ***
+    if state.X.size == 0:
+        state.X = state.X.reshape(0, len(x_i))
+    # state.X = np.concatenate([state.X, [x_i]], axis=0)
+    # state.Y = np.append(state.Y, y_i)
+    # state.beta = np.append(state.beta, 0)
+    # K = np.array([kernel(x1, x2) for x1 in state.X for x2 in state.X]).reshape(len(state.X), len(state.X))
+    # state.beta = state.beta + learning_rate * (state.Y - np.sign(K @ state.beta))
+
+    state.X = np.concatenate([state.X, [x_i]], axis=0)
+    state.beta = np.append(state.beta, 0)
+    state.beta[-1] = learning_rate * (y_i - predict(state, kernel, x_i))
     # *** END CODE HERE ***
 
 
