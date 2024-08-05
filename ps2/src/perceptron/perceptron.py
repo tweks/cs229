@@ -9,7 +9,6 @@ import util
 class State():
     def __init__(self):
         self.X = np.array([])
-        self.Y = np.array([])
         self.beta = np.array([])
 
 
