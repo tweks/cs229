@@ -59,12 +59,6 @@ def update_state(state, kernel, learning_rate, x_i, y_i):
     # *** START CODE HERE ***
     if state.X.size == 0:
         state.X = state.X.reshape(0, len(x_i))
-    # state.X = np.concatenate([state.X, [x_i]], axis=0)
-    # state.Y = np.append(state.Y, y_i)
-    # state.beta = np.append(state.beta, 0)
-    # K = np.array([kernel(x1, x2) for x1 in state.X for x2 in state.X]).reshape(len(state.X), len(state.X))
-    # state.beta = state.beta + learning_rate * (state.Y - np.sign(K @ state.beta))
-
     state.X = np.concatenate([state.X, [x_i]], axis=0)
     state.beta = np.append(state.beta, 0)
     state.beta[-1] = learning_rate * (y_i - predict(state, kernel, x_i))
