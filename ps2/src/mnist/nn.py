@@ -94,10 +94,10 @@ def forward_prop(data, labels, params):
             3. The average loss for these data elements
     """
     # *** START CODE HERE ***
-    nexp, _ = data.shape
+    batch_size, _ = data.shape
     a = sigmoid(data @ params['W1'] + params['b1'])
     output = softmax(a @ params['W2'] + params['b2'])
-    loss = - np.sum(np.log(output) * labels) / nexp
+    loss = - np.sum(np.log(output) * labels) / batch_size
     return a, output, loss
     # *** END CODE HERE ***
 
