@@ -125,10 +125,12 @@ def backward_prop(data, labels, params, forward_prop_func):
     batch_size, _ = data.shape
     a, output, _ = forward_prop_func(data, labels, params)
     grad_z2 = (output - labels) / batch_size
+    # grad_b2 = np.ones(grad_z2.shape[0]) @ grad_z2
     grad_b2 = grad_z2.sum(axis=0)
     grad_W2 = a.T @ grad_z2
     grad_a = grad_z2 @ params['W2'].T
     grad_z1 = grad_a * a * (1 - a)
+    # grad_b1 = np.ones(grad_z1.shape[0]) @ grad_z1
     grad_b1 = grad_z1.sum(axis=0)
     grad_W1 = data.T @ grad_z1 
     # print(f'grad_z2: {grad_z2.shape}')
