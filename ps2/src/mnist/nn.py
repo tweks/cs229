@@ -66,7 +66,7 @@ def get_initial_params(input_size, num_hidden, num_output):
     """
 
     # *** START CODE HERE ***
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(42)
     return {
         'W1': rng.normal(size=(input_size, num_hidden)),
         'b1': np.zeros(num_hidden),
