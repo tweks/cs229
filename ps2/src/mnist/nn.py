@@ -21,6 +21,8 @@ def softmax(x):
         A 2d numpy float array containing the softmax results of shape batch_size x number_of_classes
     """
     # *** START CODE HERE ***
+    xnorm = x - x.max(axis=1, keepdims=True)
+    return np.exp(xnorm) / np.exp(xnorm).sum(axis=1, keepdims=True)
     # *** END CODE HERE ***
 
 def sigmoid(x):
@@ -34,6 +36,7 @@ def sigmoid(x):
         A numpy float array containing the sigmoid results
     """
     # *** START CODE HERE ***
+    return 1 / (1 + np.exp(-x))
     # *** END CODE HERE ***
 
 def get_initial_params(input_size, num_hidden, num_output):
@@ -63,6 +66,13 @@ def get_initial_params(input_size, num_hidden, num_output):
     """
 
     # *** START CODE HERE ***
+    rng = np.random.default_rng()
+    return {
+        'W1': rng.normal(size=(input_size, num_hidden)),
+        'b1': np.zeros(num_hidden),
+        'W2': rng.normal(size=(num_hidden, num_output)),
+        'b2': np.zeros(num_output),
+    }
     # *** END CODE HERE ***
 
 def forward_prop(data, labels, params):
@@ -84,6 +94,11 @@ def forward_prop(data, labels, params):
             3. The average loss for these data elements
     """
     # *** START CODE HERE ***
+    nexp, _ = data.shape
+    a = sigmoid(data @ params['W1'] + params['b1'])
+    output = softmax(a @ params['W2'] + params['b2'])
+    loss = - np.sum(np.log(output) * labels) / nexp
+    return a, output, loss
     # *** END CODE HERE ***
 
 def backward_prop(data, labels, params, forward_prop_func):
@@ -107,6 +122,28 @@ def backward_prop(data, labels, params, forward_prop_func):
             W1, W2, b1, and b2
     """
     # *** START CODE HERE ***
+    batch_size, _ = data.shape
+    a, output, _ = forward_prop_func(data, labels, params)
+    grad_z2 = (output - labels) / batch_size
+    grad_b2 = grad_z2.sum(axis=0)
+    grad_W2 = a.T @ grad_z2
+    grad_a = grad_z2 @ params['W2'].T
+    grad_z1 = grad_a * a * (1 - a)
+    grad_b1 = grad_z1.sum(axis=0)
+    grad_W1 = data.T @ grad_z1 
+    # print(f'grad_z2: {grad_z2.shape}')
+    # print(f'grad_b2: {grad_b2.shape}')
+    # print(f'grad_W2: {grad_W2.shape}')
+    # print(f'grad_a: {grad_a.shape}')
+    # print(f'grad_z1: {grad_z1.shape}')
+    # print(f'grad_b1: {grad_b1.shape}')
+    # print(f'grad_W1: {grad_W1.shape}')
+    return {
+        'W1': grad_W1,
+        'W2': grad_W2,
+        'b1': grad_b1,
+        'b2': grad_b2,
+    }
     # *** END CODE HERE ***
 
 
@@ -154,6 +191,17 @@ def gradient_descent_epoch(train_data, train_labels, learning_rate, batch_size, 
     """
 
     # *** START CODE HERE ***
+    nexp, _ = train_data.shape
+    for batch_start in range(0, nexp, batch_size):
+        batch_data = train_data[batch_start : batch_start + batch_size]
+        batch_labels = train_labels[batch_start : batch_start + batch_size]
+        # _, _, loss = forward_prop_func(batch_data, batch_labels, params)
+        # print(f'loss: {loss.shape}')
+        grad = backward_prop_func(batch_data, batch_labels, params, forward_prop_func)
+        for p in ('W1', 'W2', 'b1', 'b2'):
+            # print(f'Param {p}: {params[p].shape}')
+            # print(f'Grad {p}: {grad[p].shape}')
+            params[p] = params[p] - learning_rate * grad[p]
     # *** END CODE HERE ***
 
     # This function does not return anything
