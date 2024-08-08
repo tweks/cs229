@@ -171,6 +171,21 @@ def backward_prop_regularized(data, labels, params, forward_prop_func, reg):
             W1, W2, b1, and b2
     """
     # *** START CODE HERE ***
+    batch_size, _ = data.shape
+    a, output, _ = forward_prop_func(data, labels, params)
+    grad_z2 = (output - labels) / batch_size
+    grad_b2 = grad_z2.sum(axis=0)
+    grad_W2 = a.T @ grad_z2 + 2 * reg * params['W2']
+    grad_a = grad_z2 @ params['W2'].T
+    grad_z1 = grad_a * a * (1 - a)
+    grad_b1 = grad_z1.sum(axis=0)
+    grad_W1 = data.T @ grad_z1 + 2 * reg * params['W1']
+    return {
+        'W1': grad_W1,
+        'W2': grad_W2,
+        'b1': grad_b1,
+        'b2': grad_b2,
+    }
     # *** END CODE HERE ***
 
 def gradient_descent_epoch(train_data, train_labels, learning_rate, batch_size, params, forward_prop_func, backward_prop_func):
