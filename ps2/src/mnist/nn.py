@@ -133,13 +133,6 @@ def backward_prop(data, labels, params, forward_prop_func):
     # grad_b1 = np.ones(grad_z1.shape[0]) @ grad_z1
     grad_b1 = grad_z1.sum(axis=0)
     grad_W1 = data.T @ grad_z1 
-    # print(f'grad_z2: {grad_z2.shape}')
-    # print(f'grad_b2: {grad_b2.shape}')
-    # print(f'grad_W2: {grad_W2.shape}')
-    # print(f'grad_a: {grad_a.shape}')
-    # print(f'grad_z1: {grad_z1.shape}')
-    # print(f'grad_b1: {grad_b1.shape}')
-    # print(f'grad_W1: {grad_W1.shape}')
     return {
         'W1': grad_W1,
         'W2': grad_W2,
@@ -212,12 +205,8 @@ def gradient_descent_epoch(train_data, train_labels, learning_rate, batch_size, 
     for batch_start in range(0, nexp, batch_size):
         batch_data = train_data[batch_start : batch_start + batch_size]
         batch_labels = train_labels[batch_start : batch_start + batch_size]
-        # _, _, loss = forward_prop_func(batch_data, batch_labels, params)
-        # print(f'loss: {loss.shape}')
         grad = backward_prop_func(batch_data, batch_labels, params, forward_prop_func)
         for p in ('W1', 'W2', 'b1', 'b2'):
-            # print(f'Param {p}: {params[p].shape}')
-            # print(f'Grad {p}: {grad[p].shape}')
             params[p] = params[p] - learning_rate * grad[p]
     # *** END CODE HERE ***
 
