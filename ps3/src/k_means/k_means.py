@@ -1,4 +1,3 @@
-from __future__ import division, print_function
 import argparse
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -10,7 +9,7 @@ import random
 def init_centroids(num_clusters, image):
     """
     Initialize a `num_clusters` x image_shape[-1] nparray to RGB
-    values of randomly chosen pixels of`image`
+    values of randomly chosen pixels of `image`
 
     Parameters
     ----------
@@ -26,10 +25,18 @@ def init_centroids(num_clusters, image):
     """
 
     # *** START YOUR CODE ***
-    # raise NotImplementedError('init_centroids function not implemented')
+    rng = np.random.default_rng(42)
+    pixels = image.reshape(-1, image.shape[-1])
+    centroids_init = rng.choice(pixels, num_clusters, replace=False)
     # *** END YOUR CODE ***
 
     return centroids_init
+
+
+def get_closest_centroids(image, centroids):
+    delta = image[:, :, np.newaxis, :].astype(int) - centroids
+    dist = np.linalg.norm(delta, axis=-1)
+    return np.argmin(dist, axis=-1)
 
 
 def update_centroids(centroids, image, max_iter=30, print_every=10):
@@ -39,7 +46,7 @@ def update_centroids(centroids, image, max_iter=30, print_every=10):
     Parameters
     ----------
     centroids : nparray
-        The centroids stored as an nparray
+        The centroids stored as an nparray (N_CENTROIDS, C)
     image : nparray
         (H, W, C) image represented as an nparray
     max_iter : int
@@ -54,15 +61,21 @@ def update_centroids(centroids, image, max_iter=30, print_every=10):
     """
 
     # *** START YOUR CODE ***
-    # raise NotImplementedError('update_centroids function not implemented')
-        # Usually expected to converge long before `max_iter` iterations
-                # Initialize `dist` vector to keep track of distance to every centroid
-                # Loop over all centroids and store distances in `dist`
-                # Find closest centroid and update `new_centroids`
-        # Update `new_centroids`
+    # Usually expected to converge long before `max_iter` iterations
+    for iter in range(max_iter):
+        closest_centroids = get_closest_centroids(image, centroids)
+        new_centroids = np.zeros_like(centroids)
+        for c in range(len(centroids)):
+            c_pixels = image[closest_centroids == c]
+            new_centroids[c] = c_pixels.mean(axis=0)
+        if iter % print_every == 0:
+            print(f'Iteration {iter}. Centroids updated by {np.linalg.norm(centroids - new_centroids):.2f}.')
+        if np.all(centroids == new_centroids) and iter >= 30:
+            break
+        centroids = new_centroids
     # *** END YOUR CODE ***
 
-    return new_centroids
+    return centroids
 
 
 def update_image(image, centroids):
@@ -84,10 +97,8 @@ def update_image(image, centroids):
     """
 
     # *** START YOUR CODE ***
-    # raise NotImplementedError('update_image function not implemented')
-            # Initialize `dist` vector to keep track of distance to every centroid
-            # Loop over all centroids and store distances in `dist`
-            # Find closest centroid and update pixel value in `image`
+    closest_centroids = get_closest_centroids(image, centroids)
+    image = centroids[closest_centroids]
     # *** END YOUR CODE ***
 
     return image
