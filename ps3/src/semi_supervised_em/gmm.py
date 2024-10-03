@@ -26,10 +26,18 @@ def main(is_semi_supervised, trial_num):
     # *** START CODE HERE ***
     # (1) Initialize mu and sigma by splitting the n_examples data points uniformly at random
     # into K groups, then calculating the sample mean and covariance for each group
+    rng = np.random.default_rng()
+    rng.shuffle(x)
+    x_groups = np.array_split(x, K)
+    mu = [np.mean(group, axis=0) for group in x_groups]
+    sigma = [np.cov(group, rowvar=False) for group in x_groups]
     # (2) Initialize phi to place equal probability on each Gaussian
     # phi should be a numpy array of shape (K,)
+    phi = np.array([1/K] * K)
     # (3) Initialize the w values to place equal probability on each Gaussian
     # w should be a numpy array of shape (m, K)
+    n, _ = x.shape
+    w = np.full((n, K), 1/K)
     # *** END CODE HERE ***
 
     if is_semi_supervised:
@@ -71,15 +79,33 @@ def run_em(x, w, phi, mu, sigma):
     # See below for explanation of the convergence criterion
     it = 0
     ll = prev_ll = None
+
+    _, dim = x.shape
+
     while it < max_iter and (prev_ll is None or np.abs(ll - prev_ll) >= eps):
         pass  # Just a placeholder for the starter code
         # *** START CODE HERE
         # (1) E-step: Update your estimates in w
+        # w (N, K) sigma (K, dim, dim) phi (K,)  x(N, dim) mu (K, dim)
+        x_mu = (np.expand_dims(x, -2) - mu)  # (N, K, dim)
+        exponents = np.squeeze(np.exp(-0.5 * np.expand_dims(x_mu, -2) @ np.linalg.inv(sigma) @ np.expand_dims(x_mu, -1)))
+        p = exponents / (np.power(2 * np.pi, dim / 2) * np.sqrt(np.linalg.det(sigma))) * phi
+        w = p / np.sum(p, axis=1, keepdims=True)
         # (2) M-step: Update the model parameters phi, mu, and sigma
+        phi = np.average(w, axis=0)
+        mu = (w.T @ x) / np.sum(w, axis=0, keepdims=True).T
+        x_mu = (np.expand_dims(x, -2) - mu)  # (N, K, dim)
+        cov = np.sum((np.expand_dims(w, (-1, -2)) * (np.expand_dims(x_mu, -1) @ np.expand_dims(x_mu, -2))), axis=0)
+        sigma =  cov / np.sum(w, axis=0)[:, np.newaxis, np.newaxis]
         # (3) Compute the log-likelihood of the data to check for convergence.
         # By log-likelihood, we mean `ll = sum_x[log(sum_z[p(x|z) * p(z)])]`.
         # We define convergence by the first iteration where abs(ll - prev_ll) < eps.
         # Hint: For debugging, recall part (a). We showed that ll should be monotonically increasing.
+        it += 1
+        prev_ll = ll
+        ll = np.sum(np.log(np.sum(p, axis=1)))
+        if prev_ll and np.abs(ll - prev_ll) < eps:
+            print(f'Converged in {it} steps with loss {ll:.5f}')
         # *** END CODE HERE ***
 
     return w
@@ -113,14 +139,41 @@ def run_semi_supervised_em(x, x_tilde, z_tilde, w, phi, mu, sigma):
     # See below for explanation of the convergence criterion
     it = 0
     ll = prev_ll = None
+
+    _, dim = x.shape
+    k = len(phi)
+    z_tilde = np.squeeze(z_tilde).astype(int)
+    z_tilde_oh = np.eye(k)[z_tilde]  # (N, K)
+
     while it < max_iter and (prev_ll is None or np.abs(ll - prev_ll) >= eps):
         pass  # Just a placeholder for the starter code
         # *** START CODE HERE ***
         # (1) E-step: Update your estimates in w
+        x_mu = (np.expand_dims(x, -2) - mu)  # (N, K, dim)
+        x_tilde_mu = (np.expand_dims(x_tilde, -2) - mu)  # (N, K, dim)
+        exponents = np.squeeze(np.exp(-0.5 * np.expand_dims(x_mu, -2) @ np.linalg.inv(sigma) @ np.expand_dims(x_mu, -1)))
+        p =  exponents / (np.power(2 * np.pi, dim / 2) * np.sqrt(np.linalg.det(sigma))) * phi
+        exponents_tilde = np.squeeze(np.exp(-0.5 * np.expand_dims(x_tilde_mu, -2) @ np.linalg.inv(sigma) @ np.expand_dims(x_tilde_mu, -1)))
+        p_tilde = exponents_tilde / (np.power(2 * np.pi, dim / 2) * np.sqrt(np.linalg.det(sigma))) * z_tilde_oh
+        w = p / np.sum(p, axis=1, keepdims=True)
         # (2) M-step: Update the model parameters phi, mu, and sigma
+        # w (N, K) sigma (K, dim, dim) phi (K,)  x (N, dim) mu (K, dim)
+        # x_tilde (Nt, dim), z_tilde (Nt, 1)
+        phi = np.average(w, axis=0)
+        mu = (w.T @ x + alpha * z_tilde_oh.T @ x_tilde) / (np.sum(w, axis=0, keepdims=True).T + alpha * np.sum(z_tilde_oh, axis=0, keepdims=True).T)
+        x_mu = (np.expand_dims(x, -2) - mu)  # (N, K, dim)
+        x_tilde_mu = (np.expand_dims(x_tilde, -2) - mu)  # (N, K, dim)
+        cov = np.sum((np.expand_dims(w, (-1, -2)) * (np.expand_dims(x_mu, -1) @ np.expand_dims(x_mu, -2))), axis=0)
+        cov_tilde = np.sum((np.expand_dims(z_tilde_oh, (-1, -2)) * (np.expand_dims(x_tilde_mu, -1) @ np.expand_dims(x_tilde_mu, -2))), axis=0)
+        sigma =  (cov + alpha * cov_tilde) / (np.sum(w, axis=0)[:, np.newaxis, np.newaxis] + alpha * np.sum(z_tilde_oh, axis=0)[:, np.newaxis, np.newaxis])
         # (3) Compute the log-likelihood of the data to check for convergence.
         # Hint: Make sure to include alpha in your calculation of ll.
         # Hint: For debugging, recall part (a). We showed that ll should be monotonically increasing.
+        it += 1
+        prev_ll = ll
+        ll = np.sum(np.log(np.sum(p, axis=1))) + alpha * np.sum(np.log(np.sum(p_tilde, axis=1)))
+        if prev_ll and np.abs(ll - prev_ll) < eps:
+            print(f'Converged in {it} steps with loss {ll:.5f}')
         # *** END CODE HERE ***
 
     return w
@@ -195,5 +248,5 @@ if __name__ == '__main__':
         # Once you've implemented the semi-supervised version,
         # uncomment the following line.
         # You do not need to add any other lines in this code block.
-        # main(is_semi_supervised=True, trial_num=t)
+        main(is_semi_supervised=True, trial_num=t)
         # *** END CODE HERE ***
