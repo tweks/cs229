@@ -82,6 +82,9 @@ initial learning quickly, and start the display only after the
 performance is reasonable.
 """
 
+NUM_NEGATIVE = 0
+NUM_REACHED = 1
+
 def initialize_mdp_data(num_states):
     """
     Return a variable that contains all the parameters/state you need for your MDP.
@@ -99,8 +102,8 @@ def initialize_mdp_data(num_states):
 
     Returns: The initial MDP parameters
     """
-    transition_counts = np.zeros((num_states, num_states, 2))
-    transition_probs = np.ones((num_states, num_states, 2)) / num_states
+    transition_counts = np.zeros((num_states, 2, num_states))
+    transition_probs = np.ones((num_states, 2, num_states)) / num_states
     #Index zero is count of rewards being -1 , index 1 is count of total num state is reached
     reward_counts = np.zeros((num_states, 2)) 
     reward = np.zeros(num_states)
@@ -129,6 +132,11 @@ def choose_action(state, mdp_data):
     """
 
     # *** START CODE HERE ***
+    action_value = mdp_data['transition_probs'][state] @ mdp_data['value']
+    if action_value[0] != action_value[1]:
+        return np.argmax(action_value)
+    else:
+        return np.random.randint(2)
     # *** END CODE HERE ***
 
 def update_mdp_transition_counts_reward_counts(mdp_data, state, action, new_state, reward):
@@ -153,6 +161,10 @@ def update_mdp_transition_counts_reward_counts(mdp_data, state, action, new_stat
     """
 
     # *** START CODE HERE ***
+    mdp_data['transition_counts'][state, action, new_state] += 1
+    mdp_data['reward_counts'][new_state, NUM_REACHED] += 1
+    if reward == -1:
+        mdp_data['reward_counts'][new_state, NUM_NEGATIVE] += 1
     # *** END CODE HERE ***
 
     # This function does not return anything
@@ -176,6 +188,11 @@ def update_mdp_transition_probs_reward(mdp_data):
     """
 
     # *** START CODE HERE ***
+    reached_mask = mdp_data['reward_counts'][:, NUM_REACHED] > 0
+    mdp_data['reward'][reached_mask] = - mdp_data['reward_counts'][reached_mask, NUM_NEGATIVE] / mdp_data['reward_counts'][reached_mask, NUM_REACHED]
+    state_action_counts = np.sum(mdp_data['transition_counts'], axis=2)
+    state_action_mask = state_action_counts > 0
+    mdp_data['transition_probs'][state_action_mask] = mdp_data['transition_counts'][state_action_mask] / state_action_counts[state_action_mask][:, np.newaxis]
     # *** END CODE HERE ***
 
     # This function does not return anything
@@ -203,9 +220,17 @@ def update_mdp_value(mdp_data, tolerance, gamma):
     """
 
     # *** START CODE HERE ***
+    converged = False
+    num_iterations = 0
+    while not converged:
+        num_iterations += 1
+        new_value = mdp_data['reward'] + gamma * np.max(mdp_data['transition_probs'] @ mdp_data['value'], axis=1)
+        converged = np.max(np.abs(new_value - mdp_data['value'])) < tolerance
+        mdp_data['value'] = new_value
+    return num_iterations == 1
     # *** END CODE HERE ***
 
-def main(plot=True):
+def main(plot=True, show_display=False):
     # Seed the randomness of the simulation so this outputs the same thing each time
     np.random.seed(0)
 
@@ -242,8 +267,8 @@ def main(plot=True):
     # `state` is the number given to this state, you only need to consider
     # this representation of the state
     state = cart_pole.get_state(state_tuple)
-    # if min_trial_length_to_start_display == 0 or display_started == 1:
-    #     cart_pole.show_cart(state_tuple, pause_time)
+    if show_display and (min_trial_length_to_start_display == 0 or display_started == 1):
+        cart_pole.show_cart(state_tuple, pause_time)
 
     mdp_data = initialize_mdp_data(NUM_STATES)
 
@@ -268,8 +293,8 @@ def main(plot=True):
 
         # Get the state number corresponding to new state vector
         new_state = cart_pole.get_state(state_tuple)
-        # if display_started == 1:
-        #     cart_pole.show_cart(state_tuple, pause_time)
+        if show_display and display_started == 1:
+            cart_pole.show_cart(state_tuple, pause_time)
 
         # reward function to use - do not change this!
         if new_state == NUM_STATES - 1:
